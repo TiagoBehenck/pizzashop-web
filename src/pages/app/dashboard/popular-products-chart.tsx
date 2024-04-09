@@ -20,6 +20,16 @@ const COLORS = [
   colors.rose[500],
 ]
 
+type LabelProps = {
+  cx: string
+  cy: string
+  midAngle: number
+  innerRadius: number
+  outerRadius: number
+  value: number
+  index: number
+}
+
 export function PopularProductsChart() {
   const getLabel = ({
     cx,
@@ -29,8 +39,7 @@ export function PopularProductsChart() {
     outerRadius,
     value,
     index,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }: any) => {
+  }: LabelProps) => {
     const RADIAN = Math.PI / 180
     const radius = 12 + innerRadius + (outerRadius - innerRadius)
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
