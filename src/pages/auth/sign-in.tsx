@@ -1,8 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -18,18 +17,17 @@ const signInForm = z.object({
 type SignForm = z.infer<typeof signInForm>
 
 export function SignIn() {
+  const [searchParams] = useSearchParams()
+
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { isSubmitting },
-  } = useForm<SignForm>()
-  const location = useLocation()
-  const state = location?.state as SignForm
-
-  useEffect(() => {
-    setValue('email', state?.email || '')
-  }, [setValue, state?.email])
+  } = useForm<SignForm>({
+    defaultValues: {
+      email: searchParams.get('email') ?? '',
+    },
+  })
 
   const { mutateAsync: authenticate } = useMutation({
     mutationFn: signIn,
