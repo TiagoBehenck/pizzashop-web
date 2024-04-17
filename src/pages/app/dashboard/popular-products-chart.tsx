@@ -1,16 +1,10 @@
-import { BarChart } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { BarChart, Loader2 } from 'lucide-react'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import colors from 'tailwindcss/colors'
 
+import { getPopularProducts } from '@/api/get-popular-products'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-const data = [
-  { product: 'Margherita', amount: 100 },
-  { product: 'Pepperoni', amount: 20 },
-  { product: 'Calabresa', amount: 75 },
-  { product: 'Frango catupiry', amount: 80 },
-  { product: 'Chocolate', amount: 12 },
-]
 
 const COLORS = [
   colors.sky[500],
@@ -31,6 +25,11 @@ type LabelProps = {
 }
 
 export function PopularProductsChart() {
+  const { data: popularProducts } = useQuery({
+    queryKey: ['metrics', 'popular-products'],
+    queryFn: getPopularProducts,
+  })
+
   const getLabel = ({
     cx,
     cy,
@@ -40,6 +39,8 @@ export function PopularProductsChart() {
     value,
     index,
   }: LabelProps) => {
+    if (!popularProducts) return
+
     const RADIAN = Math.PI / 180
     const radius = 12 + innerRadius + (outerRadius - innerRadius)
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
@@ -53,9 +54,9 @@ export function PopularProductsChart() {
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
       >
-        {data[index].product.length > 12
-          ? data[index].product.substring(0, 12).concat('...')
-          : data[index].product}{' '}
+        {popularProducts[index].product.length > 12
+          ? popularProducts[index].product.substring(0, 12).concat('...')
+          : popularProducts[index].product}{' '}
         ({value})
       </text>
     )
@@ -64,7 +65,7 @@ export function PopularProductsChart() {
   return (
     <Card className="col-span-3">
       <CardHeader className="pb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between ">
           <CardTitle className="text-base font-medium">
             Produtos populares
           </CardTitle>
@@ -72,32 +73,38 @@ export function PopularProductsChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={240}>
-          <PieChart style={{ fontSize: 12 }}>
-            <Pie
-              data={data}
-              dataKey="amount"
-              nameKey="product"
-              cx="50%"
-              cy="50%"
-              outerRadius={86}
-              innerRadius={64}
-              strokeWidth={8}
-              labelLine={false}
-              label={getLabel}
-            >
-              {data.map((_, index) => {
-                return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index]}
-                    className="stroke-background hover:opacity-80"
-                  />
-                )
-              })}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+        {popularProducts ? (
+          <ResponsiveContainer width="100%" height={240}>
+            <PieChart style={{ fontSize: 12 }}>
+              <Pie
+                data={popularProducts}
+                nameKey="product"
+                dataKey="amount"
+                cx="50%"
+                cy="50%"
+                outerRadius={86}
+                innerRadius={64}
+                strokeWidth={8}
+                labelLine={false}
+                label={getLabel}
+              >
+                {popularProducts.map((_, index) => {
+                  return (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index]}
+                      className="stroke-background hover:opacity-80"
+                    />
+                  )
+                })}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex h-[240px] w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </CardContent>
     </Card>
   )
