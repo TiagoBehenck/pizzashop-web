@@ -50,7 +50,7 @@ export const getOrdersMock = http.get<never, never, GetOrdersResponse>(
       )
     }
 
-    if (customerName) {
+    if (status) {
       filteredOrders = filteredOrders.filter((order) => order.status === status)
     }
 
